@@ -1,0 +1,8 @@
+{
+  "id": "def_dash_1",
+  "name": "J · Instrument",
+  "version": "1.0.0",
+  "description": "Два аналоговых колодца, центральная мини-карта и асинхронная телеметрия JCarTools.",
+  "entry": "index.html",
+  "settings": "settings.html"
+}
