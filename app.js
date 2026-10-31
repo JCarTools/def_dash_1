@@ -4,11 +4,12 @@
   const $ = id => document.getElementById(id);
   const state = Object.create(null), shown = { speed: 0, rpm: 0 };
   let settings = DashSettings.load(), bridge = null, api = null, subscribed = false, mapLoading = false;
-  let mapLastTimestamp = -Infinity, mapSeen = 0, mapGeneration = 0, status = "waiting", lastFrame = 0, lastPaint = 0;
+  let mapLastTimestamp = -Infinity, mapSeen = 0, mapGeneration = 0, pendingMapFrame = null, status = "waiting", lastFrame = 0, lastPaint = 0;
   const params = new URLSearchParams(location.search);
   const previewDemo = params.get("demo") === "1";
   let fixedPreview = params.has("speed") || params.has("rpm");
   let wasDemoMode = false;
+  let musicReceived = false, artworkSource = "", musicGeneration = 0;
   const palette = { ice: ["#69daef", "105,218,239"], amber: ["#e7b878", "231,184,120"], white: ["#dce9f3", "220,233,243"] };
   function number(...values) { for (const value of values) { if (value === null || value === undefined || value === "" || typeof value === "boolean") continue; const n = Number(value); if (Number.isFinite(n)) return n; } return null; }
   function boolean(value) { if (value === true || value === 1 || value === "1") return true; if (value === false || value === 0 || value === "0") return false; return null; }
@@ -44,24 +45,46 @@
     state[key] = { value, data, received: Date.now() };
   }
   function fresh(key, ttl = 12000) { const item = state[key]; return item && Date.now()-item.received < ttl ? item : null; }
-  function clearMap() { mapGeneration++; mapLoading = false; mapSeen = 0; mapLastTimestamp = -Infinity; $("mapImage").hidden = true; $("mapLive").hidden = true; $("mapImage").removeAttribute("src"); }
+  function clearMap() { mapGeneration++; pendingMapFrame = null; mapLoading = false; mapSeen = 0; mapLastTimestamp = -Infinity; $("mapImage").hidden = true; $("mapLive").hidden = true; $("mapImage").removeAttribute("src"); }
   function mapSubscription(enable) {
     if (!api || enable === subscribed) return;
     try {
       if (enable && typeof api.subscribeMiniMap === "function") {
+        mapLastTimestamp = -Infinity;
         if (typeof api.setMiniMapTheme === "function") api.setMiniMapTheme(TOKEN, settings.theme === "light" ? "day" : "night");
         const result = parse(api.subscribeMiniMap(TOKEN)); subscribed = !result || !result.error;
-      } else if (!enable && typeof api.unsubscribeMiniMap === "function") { api.unsubscribeMiniMap(TOKEN); subscribed = false; clearMap(); }
+      } else if (!enable && typeof api.unsubscribeMiniMap === "function") { api.unsubscribeMiniMap(TOKEN); subscribed = false; mapGeneration++; mapLoading = false; pendingMapFrame = null; $("mapLive").hidden = true; }
     } catch (_) { subscribed = false; }
   }
   function mapFrame(data) {
-    if (!settings.map || document.hidden || mapLoading || !data) return;
-    const src = data.image || data.src || data.frame, timestamp = Number(data.timestamp);
+    if (!settings.map || document.hidden || !data) return;
+    const src = data.image || data.src || data.frame;
+    const timestamp = data.timestamp == null ? Date.now() : Number(data.timestamp);
     if (typeof src !== "string" || !/^data:image\/(jpeg|jpg|png|webp);base64,/i.test(src) || src.length > 12*1024*1024 || !Number.isFinite(timestamp) || timestamp <= mapLastTimestamp) return;
-    const img = $("mapImage"), generation = mapGeneration; mapLoading = true;
-    img.onload = () => { if (generation !== mapGeneration) return; mapLoading = false; mapLastTimestamp = timestamp; mapSeen = Date.now(); img.hidden = false; $("mapLive").hidden = false; $("demoMap").toggleAttribute("hidden", true); };
-    img.onerror = () => { if (generation === mapGeneration) { mapLoading = false; img.hidden = true; $("mapLive").hidden = true; } };
-    img.src = src;
+    if (mapLoading) {
+      if (!pendingMapFrame || timestamp > pendingMapFrame.timestamp) pendingMapFrame = { image: src, timestamp };
+      return;
+    }
+    const generation = mapGeneration;
+    const decoded = new Image(); mapLoading = true;
+    const finish = () => {
+      if (generation !== mapGeneration) return;
+      mapLoading = false;
+      const pending = pendingMapFrame; pendingMapFrame = null;
+      if (pending) mapFrame(pending);
+    };
+    decoded.onload = () => {
+      if (generation !== mapGeneration) return;
+      const img = $("mapImage");
+      img.src = src; img.hidden = false;
+      mapLastTimestamp = timestamp; mapSeen = Date.now();
+      $("mapLive").textContent = "LIVE"; $("mapLive").hidden = false;
+      $("demoMap").toggleAttribute("hidden", true);
+      finish();
+    };
+    // Decode offscreen: a corrupt frame must not replace the last good image.
+    decoded.onerror = finish;
+    decoded.src = src;
   }
   function hud(data) {
     if (!data) return;
@@ -72,17 +95,49 @@
     const type = number(data.turnType); $("navSymbol").textContent = [2,4,6].includes(type) ? "↰" : [3,5,7].includes(type) ? "↱" : [8,19].includes(type) ? "↶" : type === 15 ? "⚑" : "↑";
     const limit = number(data.speedLimit); $("navLimit").hidden = limit === null || limit <= 0; if (limit !== null) $("navLimit").textContent = Math.round(limit);
   }
+  function clearMusic() {
+    musicGeneration++; artworkSource = ""; musicReceived = false;
+    $("musicArtwork").hidden = true; $("musicArtwork").removeAttribute("src");
+    $("musicTitle").textContent = "Ничего не играет";
+    $("musicArtist").textContent = "Название трека появится здесь";
+    $("musicCaption").textContent = "МУЗЫКА"; $("musicBars").classList.remove("playing");
+  }
+  function music(data) {
+    if (!data || typeof data !== "object") return;
+    musicReceived = true;
+    if (Object.prototype.hasOwnProperty.call(data, "SongName")) $("musicTitle").textContent = typeof data.SongName === "string" && data.SongName.trim() ? data.SongName : "Название не указано";
+    if (Object.prototype.hasOwnProperty.call(data, "SongArtist")) $("musicArtist").textContent = typeof data.SongArtist === "string" && data.SongArtist.trim() ? data.SongArtist : "Исполнитель не указан";
+    const status = String(data.PlayStat || "").toUpperCase();
+    if (status) {
+      const playing = ["PLAY", "PLAYING", "STATE_PLAYING"].includes(status);
+      const paused = ["PAUSE", "PAUSED", "STATE_PAUSED"].includes(status);
+      $("musicCaption").textContent = playing ? "СЕЙЧАС ИГРАЕТ" : paused ? "НА ПАУЗЕ" : "МУЗЫКА";
+      $("musicBars").classList.toggle("playing", playing);
+    }
+    // JCarTools sends artwork only when it changes. Missing field keeps the existing cover.
+    if (!Object.prototype.hasOwnProperty.call(data, "SongAlbumPicture")) return;
+    const raw = typeof data.SongAlbumPicture === "string" ? data.SongAlbumPicture.replace(/\s/g, "") : "";
+    const img = $("musicArtwork");
+    if (!raw) { musicGeneration++; artworkSource = ""; img.hidden = true; img.removeAttribute("src"); return; }
+    const source = /^data:image\/(png|jpe?g|webp);base64,/i.test(raw) ? raw : /^[A-Za-z0-9+/]+={0,2}$/.test(raw) ? "data:image/png;base64," + raw : null;
+    if (!source || source.length > 12*1024*1024 || source === artworkSource) return;
+    artworkSource = source; const generation = ++musicGeneration;
+    img.onload = () => { if (generation === musicGeneration) img.hidden = false; };
+    img.onerror = () => { if (generation === musicGeneration) { img.hidden = true; artworkSource = ""; } };
+    img.src = source;
+  }
   window.onAndroidEvent = function (type, payload) {
     const data = parse(payload);
     if (type === "carResponse") { if (bridge) bridge.receive(data); return; }
     if (type === "miniMapFrame") { mapFrame(data); return; }
     if (type === "hud") { hud(data); return; }
+    if (type === "musicInfo") { music(data); return; }
     const aliases = { speed:"speed", rpm:"rpm", fuel:"fuel", fuelPercent:"fuel", highBeam:"highBeam", turnSignals:"turnSignals", outTemp:"outTemp", battery:"battery", tpms:"tpms" };
     if (aliases[type] && !document.hidden) receive(aliases[type], data);
   };
   function attachAndroid() {
     if (api || !window.androidApi) return;
-    api = window.androidApi; fixedPreview = false; for (const key of Object.keys(state)) delete state[key]; shown.speed = shown.rpm = 0; clearMap();
+    api = window.androidApi; fixedPreview = false; clearMusic(); for (const key of Object.keys(state)) delete state[key]; shown.speed = shown.rpm = 0; clearMap();
     bridge = new CarBridge({ api, token: TOKEN, fastMs: settings.pollMs, onData: receive, onStatus: value => { status = value; } });
     try { if (typeof api.onJsReady === "function") api.onJsReady(TOKEN); } catch (_) {}
     if (!document.hidden) { bridge.start(); mapSubscription(settings.map); }
@@ -92,6 +147,7 @@
     document.documentElement.style.setProperty("--accent", accent); document.documentElement.style.setProperty("--accent-rgb", rgb);
     document.documentElement.style.setProperty("--brightness", settings.brightness/100);
     document.body.classList.toggle("light", settings.theme === "light");
+    $("musicCard").hidden = !settings.music; $("dashboard").classList.toggle("music-hidden", !settings.music);
     $("mapCard").classList.toggle("contain", settings.mapFit === "contain"); $("dashboard").classList.toggle("map-disabled", !settings.map);
     $("mapPlaceholderTitle").textContent = settings.map ? "Ваш маршрут — в центре" : "Мини-карта отключена";
     $("mapPlaceholderText").textContent = settings.map ? "Карта появится после подключения навигации" : "Включите карту в настройках панели";
@@ -116,7 +172,10 @@
     const now = new Date(); $("clock").textContent = now.toLocaleTimeString("ru-RU",{hour:"2-digit",minute:"2-digit"}); $("dateLabel").textContent = now.toLocaleDateString("ru-RU",{day:"numeric",month:"long"});
     const demo = !api && (previewDemo || settings.demo || fixedPreview); $("demoLabel").hidden = !demo;
     $("demoMap").toggleAttribute("hidden", !demo || !settings.map);
-    if (mapSeen && Date.now()-mapSeen > 10000) { $("mapImage").hidden = true; $("mapLive").hidden = true; }
+    if (mapSeen && !$("mapImage").hidden) {
+      $("mapLive").textContent = "LIVE";
+      $("mapLive").hidden = Date.now()-mapSeen > 10000;
+    }
     const speed = fresh("speed",2000), rpm = fresh("rpm",2000), live = !!speed && !!rpm;
     const text = demo ? "ДЕМОНСТРАЦИЯ" : status === "timeout" ? "НЕТ ОТВЕТА" : live ? "ДАННЫЕ АВТОМОБИЛЯ" : api ? "ОЖИДАНИЕ ДАННЫХ" : "НЕТ ПОДКЛЮЧЕНИЯ";
     $("connection").className = `connection ${live ? "live" : api ? "warning" : ""}`; $("connection").querySelector("span").textContent = text;
@@ -125,10 +184,16 @@
   function frame(time) {
     const dt = lastFrame ? Math.min((time-lastFrame)/1000,.1) : .016; lastFrame = time;
     const demo = !api && (previewDemo || settings.demo || fixedPreview);
-    if (wasDemoMode && !demo) { for (const key of Object.keys(state)) delete state[key]; shown.speed = shown.rpm = 0; clearMap(); $("navDistance").textContent = "Маршрут не задан"; $("navRoad").textContent = "Навигационные подсказки"; }
+    if (wasDemoMode && !demo) { for (const key of Object.keys(state)) delete state[key]; shown.speed = shown.rpm = 0; clearMusic(); clearMap(); $("navDistance").textContent = "Маршрут не задан"; $("navRoad").textContent = "Навигационные подсказки"; }
     wasDemoMode = demo;
     if (demo) {
       const phase = time/1000;
+      if (!musicReceived) {
+        $("musicTitle").textContent = "Night Drive"; $("musicArtist").textContent = "Instrument Sessions · демо";
+        $("musicCaption").textContent = "СЕЙЧАС ИГРАЕТ · ДЕМО";
+        $("musicArtwork").src = "demo-cover.svg"; $("musicArtwork").hidden = false;
+        $("musicBars").classList.add("playing"); musicReceived = true;
+      }
       receive("speed",{value:fixedPreview ? number(params.get("speed")) ?? 96 : 86+22*Math.sin(phase/7)});
       receive("rpm",{value:fixedPreview ? number(params.get("rpm")) ?? 2350 : 2300+700*Math.sin(phase/7+.3)});
       receive("fuel",{percent:64}); receive("battery",{value:14.2}); receive("outTemp",{value:12}); receive("tpms",{flWarning:0,frWarning:0,rlWarning:0,rrWarning:0});
@@ -146,9 +211,6 @@
     if (time-lastPaint > 150) { renderDetails(); lastPaint=time; }
     requestAnimationFrame(frame);
   }
-  DashSettings.mount($("settingsRoot"));
-  $("settingsButton").addEventListener("click",() => { DashSettings.mount($("settingsRoot")); $("settingsDialog").showModal(); });
-  $("settingsDialog").addEventListener("click",e => { if(e.target === $("settingsDialog")) $("settingsDialog").close(); });
   window.addEventListener("dashboard-settings",e => applySettings(e.detail));
   window.addEventListener("storage",() => applySettings(DashSettings.load()));
   document.addEventListener("visibilitychange",() => { if (document.hidden) { if(bridge) bridge.stop(); mapSubscription(false); } else { attachAndroid(); if(bridge) bridge.start(); mapSubscription(settings.map); } });
@@ -156,3 +218,4 @@
   applySettings(settings); attachAndroid(); renderDetails(); requestAnimationFrame(frame);
   setInterval(attachAndroid,1000);
 })();
+

@@ -2,7 +2,7 @@
   "use strict";
   const KEY = "j-instrument-settings-v1";
   const defaults = { theme: "dark", accent: "ice", brightness: 100, speedMax: 240, rpmMax: 8000,
-    redline: 6000, pollMs: 100, map: true, mapFit: "cover", smoothing: true, demo: false };
+    redline: 6000, pollMs: 100, map: true, music: true, mapFit: "cover", smoothing: true, demo: false };
   function normalize(input) {
     const out = { ...defaults, ...input };
     out.theme = ["dark", "light"].includes(out.theme) ? out.theme : "dark";
@@ -12,7 +12,7 @@
     out.brightness = Math.max(40, Math.min(100, Number(out.brightness) || 100));
     out.redline = Math.max(3000, Math.min(out.rpmMax, Number(out.redline) || 6000));
     out.mapFit = out.mapFit === "contain" ? "contain" : "cover";
-    for (const key of ["map", "smoothing", "demo"]) out[key] = typeof out[key] === "boolean" ? out[key] : defaults[key];
+    for (const key of ["map", "music", "smoothing", "demo"]) out[key] = typeof out[key] === "boolean" ? out[key] : defaults[key];
     return out;
   }
   function load() { try { return normalize(JSON.parse(localStorage.getItem(KEY) || "{}")); } catch (_) { return { ...defaults }; } }
@@ -30,7 +30,7 @@
       + field("Шкала оборотов", "rpmMax", [[6000,"6 000 об/мин"],[8000,"8 000 об/мин"]])
       + `<label class="setting"><span>Красная зона, об/мин</span><input name="redline" type="number" min="3000" max="8000" step="500"></label>`
       + field("Масштаб мини-карты", "mapFit", [["cover","Заполнить область"],["contain","Показать кадр целиком"]])
-      + `<label class="setting toggle"><span>Мини-карта в центре</span><input name="map" type="checkbox"></label><label class="setting toggle"><span>Плавные стрелки</span><input name="smoothing" type="checkbox"></label><label class="setting toggle"><span>Демонстрационный режим</span><input name="demo" type="checkbox"></label></div><div class="settings-notice">Настройки сохраняются на этом устройстве. Демо предназначено для предпросмотра и автоматически отключается в автомобиле. В блоке шин отображаются только предупреждения, без значений давления.</div><div class="settings-footer"><button type="submit">Сохранить настройки</button><button type="button" class="secondary reset-settings">Сбросить</button>${standalone ? '<a href="index.html">К приборке</a>' : ''}<span class="save-status" role="status"></span></div></form>`;
+      + `<label class="setting toggle"><span>Мини-карта в центре</span><input name="map" type="checkbox"></label><label class="setting toggle"><span>Обложка и название трека</span><input name="music" type="checkbox"></label><label class="setting toggle"><span>Плавные стрелки</span><input name="smoothing" type="checkbox"></label><label class="setting toggle"><span>Демонстрационный режим</span><input name="demo" type="checkbox"></label></div><div class="settings-notice">Настройки сохраняются на этом устройстве. Демо предназначено для предпросмотра и автоматически отключается в автомобиле. В блоке шин отображаются только предупреждения, без значений давления.</div><div class="settings-footer"><button type="submit">Сохранить настройки</button><button type="button" class="secondary reset-settings">Сбросить</button>${standalone ? '<a href="index.html">К приборке</a>' : ''}<span class="save-status" role="status"></span></div></form>`;
     const form = root.querySelector("form");
     function fill(settings) { for (const key of Object.keys(defaults)) { const el = form.elements.namedItem(key); if (!el) continue; if (el.type === "checkbox") el.checked = settings[key]; else el.value = settings[key]; } form.querySelector("output").textContent = settings.brightness + "%"; }
     fill(load());

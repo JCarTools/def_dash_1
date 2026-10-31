@@ -14,3 +14,24 @@ dialog .settings-shell{display:flex;flex-direction:column;max-height:88vh}dialog
 
 @media(min-width:801px){.digital strong{font-size:clamp(40px,8.3vh,85px)}}
 @media(max-width:800px){.gauge-bottom span{display:none}.gauge-bottom{bottom:7%}.gauge-bottom i{width:20px}.digital span{font-size:8px;letter-spacing:1px}}
+
+/* Music is a read-only display; no controls on the instrument screen. */
+.music-card{min-width:0;display:flex;align-items:center;gap:13px;height:64px;padding:8px 12px 8px 8px;margin:0 0 12px;background:linear-gradient(110deg,#192a3655,#13212b66);border:1px solid #2a3c49;border-radius:14px;overflow:hidden}
+.music-art{height:46px;width:46px;flex:none;position:relative;overflow:hidden;border-radius:8px;background:linear-gradient(140deg,#243f50,#111f2a);display:grid;place-items:center;border:1px solid #39536566}.music-art-placeholder{font-size:25px;color:#6d9bb3}.music-art img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}.music-info{flex:1;min-width:0}.music-caption{display:block;font-size:7px;letter-spacing:1.4px;color:#61899f;margin-bottom:4px}.music-info strong{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:15px;font-weight:400;color:var(--text);line-height:1.25}.music-artist{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:10px;color:#7893a5;margin-top:3px}.music-bars{display:flex;align-items:center;gap:3px;height:20px;flex:none;margin-right:3px}.music-bars i{display:block;width:2px;background:#3e5665;border-radius:2px;height:5px}.music-bars i:nth-child(2){height:14px}.music-bars i:nth-child(3){height:10px}.music-bars i:nth-child(4){height:18px}.music-bars.playing i{background:var(--accent);opacity:.8}
+.light .music-card{background:#f1f5f788;border-color:#b7c6d1}.light .music-caption,.light .music-artist{color:#56788e}
+@media(min-width:801px){.center-column{grid-template-rows:24px minmax(40px,1fr) 70px 76px 34px}.music-hidden .center-column{grid-template-rows:24px minmax(40px,1fr) 70px 34px}}
+@media(max-height:550px) and (min-width:801px){.center-column{grid-template-rows:20px minmax(40px,1fr) 50px 62px 27px;padding-top:8px;padding-bottom:4px}.music-hidden .center-column{grid-template-rows:20px minmax(40px,1fr) 50px 27px}.music-card{height:56px;margin-bottom:6px;padding:6px}.music-art{width:42px;height:42px}.music-info strong{font-size:13px}.music-caption{font-size:6px}.music-artist{font-size:9px}.navigation strong{font-size:15px}.navigation>div>span{font-size:9px}.center-bottom{padding:7px 3px}}
+@media(max-width:800px){.music-card{height:64px;margin-bottom:12px}.music-info strong{font-size:14px}}
+/* Keep the wells prominent; music consumes only the map's vertical space. */
+@media(min-width:801px){
+  .dashboard{padding-top:16px;padding-bottom:10px}
+  .topbar{height:44px;padding-bottom:10px}
+  .instruments{padding-top:8px;padding-bottom:8px}
+  .well{grid-template-rows:18px minmax(0,1fr)}
+  .gauge{width:100%;height:100%;max-width:none;max-height:none;aspect-ratio:auto}
+  .gauge svg{height:100%;width:100%}
+  .telemetry{padding-top:10px;padding-bottom:10px}
+  .bottomline{padding-top:10px}
+  .center-column{align-self:center;height:calc(100% - 50px);padding-top:0;padding-bottom:0}
+  .digital{top:58%}
+}
