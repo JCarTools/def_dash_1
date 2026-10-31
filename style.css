@@ -35,3 +35,49 @@ dialog .settings-shell{display:flex;flex-direction:column;max-height:88vh}dialog
   .center-column{align-self:center;height:calc(100% - 50px);padding-top:0;padding-bottom:0}
   .digital{top:58%}
 }
+
+/* Readable secondary hierarchy for a display viewed from the driver's seat. */
+.metric-icon{display:grid;place-items:center;flex:none;width:30px;height:32px;color:#89a4b6}
+.metric-icon svg{display:block;width:28px;height:28px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.beam svg{width:30px;height:24px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+@media(min-width:801px){
+  .brand small{font-size:10px;letter-spacing:1.5px;color:#8b9eac}
+  .connection,.topbar .connection{font-size:12px;letter-spacing:1.1px}
+  .well-caption{font-size:12px;letter-spacing:1.5px;color:#9dafbd}
+  .digital span{font-size:14px;letter-spacing:1px;color:#96aebf}
+  .gauge-bottom{font-size:10px;letter-spacing:1.6px;color:#748d9e}
+  .map-topline{font-size:12px;letter-spacing:1px;color:#98aebc}
+  .map-topline>span:last-child{color:#718b9d;font-size:10px}
+  .map-placeholder strong{font-size:16px}.map-placeholder>span{font-size:13px;max-width:240px;color:#90a6b5}
+  .map-live{font-size:10px}
+  .navigation strong{font-size:24px}.navigation>div>span{font-size:14px;color:#9aafbd;margin-top:5px}
+  .nav-symbol{font-size:36px}.nav-limit{width:40px;height:40px;font-size:16px}
+  .music-caption{font-size:9px;letter-spacing:1px;margin-bottom:3px;color:#8ca8b9}
+  .music-info strong{font-size:18px}.music-artist{font-size:13px;margin-top:3px;color:#9aafbd}
+  .music-card{height:72px;margin-bottom:10px}.music-art{width:52px;height:52px}
+  .music-bars{gap:4px}.music-bars i{width:3px}
+  .center-column{grid-template-rows:24px minmax(40px,1fr) 76px 82px 34px}
+  .music-hidden .center-column{grid-template-rows:24px minmax(40px,1fr) 76px 34px}
+  .center-bottom{font-size:12px;letter-spacing:.5px;color:#8da5b6}
+  .center-bottom #demoLabel{font-size:9px}
+  .metric small{font-size:12px;letter-spacing:1px;color:#8fa7b8}
+  .metric strong{font-size:30px;margin-top:4px}.metric em{font-size:14px;color:#9aafbf}
+  .metric strong.tpms-value{font-size:17px;line-height:1.4;white-space:nowrap}
+  .wheel-dots{grid-template-columns:6px 6px;gap:8px 17px}.wheel-dots i{width:6px;height:11px}
+  .reserve{font-size:11px}.bottomline{font-size:9px;letter-spacing:1px}
+}
+@media(min-width:801px) and (max-width:1250px){
+  .metric{padding-left:15px;padding-right:15px;gap:10px}.metric small{font-size:10px;letter-spacing:.6px}
+  .metric strong.tpms-value{font-size:13px}.metric-icon{width:25px}.metric-icon svg{width:25px;height:25px}
+  .navigation strong{font-size:20px}.navigation>div>span{font-size:12px}.music-info strong{font-size:16px}.music-artist{font-size:12px}
+  .connection,.topbar .connection{font-size:10px}.map-topline{font-size:10px}.fuel-track{width:40px}
+}
+@media(max-height:550px) and (min-width:801px){
+  .center-column{grid-template-rows:20px minmax(40px,1fr) 54px 62px 27px}.music-hidden .center-column{grid-template-rows:20px minmax(40px,1fr) 54px 27px}
+  .music-card{height:56px;margin-bottom:6px}.music-art{height:42px;width:42px}.music-caption{display:none}.music-info strong{font-size:16px}.music-artist{font-size:11px}
+  .navigation strong{font-size:19px}.navigation>div>span{font-size:11px}.center-bottom{font-size:10px}
+  .well-caption{font-size:10px}.gauge-bottom{font-size:8px}.digital span{font-size:11px}
+  .metric small{font-size:10px}.metric strong{font-size:24px}.metric strong.tpms-value{font-size:13px}.metric em{font-size:12px}
+}
+@media(max-width:800px){.metric-icon{width:24px;height:28px}.metric-icon svg{width:24px;height:24px}.music-artist{font-size:12px}.music-caption{font-size:8px}.music-info strong{font-size:16px}}
+.light .metric-icon{color:#54768c}.light .music-caption,.light .music-artist,.light .navigation>div>span,.light .center-bottom{color:#506f84}
