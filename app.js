@@ -200,9 +200,10 @@
       if (!fixedPreview) { $("navDistance").textContent="350 м"; $("navRoad").textContent="Демонстрационный маршрут"; $("navSymbol").textContent="↱"; }
     }
     const smooth = settings.smoothing && !matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const smoothingSeconds = settings.smoothingMs / 1000;
     for (const [key,prefix,max] of [["speed","s",settings.speedMax],["rpm","r",settings.rpmMax]]) {
       const item = fresh(key,2000), target = item ? item.value : 0;
-      shown[key] += (target-shown[key]) * (smooth ? 1-Math.exp(-12*dt) : 1);
+      shown[key] += (target-shown[key]) * (smooth ? 1-Math.exp(-dt/smoothingSeconds) : 1);
       const angle = -135+270*Math.max(0,Math.min(1,shown[key]/max));
       const needle = $(prefix+"Needle"); if (needle) needle.setAttribute("transform",`rotate(${angle} 250 250)`);
       const progress = $(prefix+"Progress"); if (progress) progress.setAttribute("d",arc(-135,Math.max(-134.99,angle),213));

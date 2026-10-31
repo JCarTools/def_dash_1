@@ -2,12 +2,12 @@
   "use strict";
   const KEY = "j-instrument-settings-v1";
   const defaults = { theme: "dark", accent: "ice", brightness: 100, speedMax: 240, rpmMax: 8000,
-    redline: 6000, pollMs: 100, map: true, music: true, mapFit: "cover", smoothing: true, demo: false };
+    redline: 6000, pollMs: 100, map: true, music: true, mapFit: "cover", smoothing: true, smoothingMs: 180, demo: false };
   function normalize(input) {
     const out = { ...defaults, ...input };
     out.theme = ["dark", "light"].includes(out.theme) ? out.theme : "dark";
     out.accent = ["ice", "amber", "white"].includes(out.accent) ? out.accent : "ice";
-    for (const [key, allowed] of Object.entries({ speedMax: [180, 220, 240, 260], rpmMax: [6000, 8000], pollMs: [100, 200, 400] }))
+    for (const [key, allowed] of Object.entries({ speedMax: [180, 220, 240, 260], rpmMax: [6000, 8000], pollMs: [100, 200, 400], smoothingMs: [80, 120, 180, 250, 350, 500] }))
       out[key] = allowed.includes(Number(out[key])) ? Number(out[key]) : defaults[key];
     out.brightness = Math.max(40, Math.min(100, Number(out.brightness) || 100));
     out.redline = Math.max(3000, Math.min(out.rpmMax, Number(out.redline) || 6000));
@@ -26,14 +26,16 @@
       + field("Акцент", "accent", [["ice", "Ледяной голубой"], ["amber", "Тёплый янтарь"], ["white", "Платиновый белый"]])
       + `<label class="setting"><span>Яркость панели <output id="brightnessOutput"></output></span><input name="brightness" type="range" min="40" max="100" step="5"></label>`
       + field("Частота быстрых показателей", "pollMs", [[100, "100 мс · плавно"], [200, "200 мс · сбалансированно"], [400, "400 мс · экономно"]], "Интервал после ответа. Одновременно выполняется один запрос.")
+      + field("Инерция стрелок", "smoothingMs", [[80, "80 мс · быстрая"], [120, "120 мс · лёгкая"], [180, "180 мс · сбалансированная"], [250, "250 мс · мягкая"], [350, "350 мс · плавная"], [500, "500 мс · выраженная"]], "Чем больше значение, тем мягче стрелка догоняет показания. Частота опроса задаётся отдельно.")
       + field("Шкала скорости", "speedMax", [[180,"180 км/ч"],[220,"220 км/ч"],[240,"240 км/ч"],[260,"260 км/ч"]])
       + field("Шкала оборотов", "rpmMax", [[6000,"6 000 об/мин"],[8000,"8 000 об/мин"]])
       + `<label class="setting"><span>Красная зона, об/мин</span><input name="redline" type="number" min="3000" max="8000" step="500"></label>`
       + field("Масштаб мини-карты", "mapFit", [["cover","Заполнить область"],["contain","Показать кадр целиком"]])
       + `<label class="setting toggle"><span>Мини-карта в центре</span><input name="map" type="checkbox"></label><label class="setting toggle"><span>Обложка и название трека</span><input name="music" type="checkbox"></label><label class="setting toggle"><span>Плавные стрелки</span><input name="smoothing" type="checkbox"></label><label class="setting toggle"><span>Демонстрационный режим</span><input name="demo" type="checkbox"></label></div><div class="settings-notice">Настройки сохраняются на этом устройстве. Демо предназначено для предпросмотра и автоматически отключается в автомобиле. В блоке шин отображаются только предупреждения, без значений давления.</div><div class="settings-footer"><button type="submit">Сохранить настройки</button><button type="button" class="secondary reset-settings">Сбросить</button>${standalone ? '<a href="index.html">К приборке</a>' : ''}<span class="save-status" role="status"></span></div></form>`;
     const form = root.querySelector("form");
-    function fill(settings) { for (const key of Object.keys(defaults)) { const el = form.elements.namedItem(key); if (!el) continue; if (el.type === "checkbox") el.checked = settings[key]; else el.value = settings[key]; } form.querySelector("output").textContent = settings.brightness + "%"; }
+    function fill(settings) { for (const key of Object.keys(defaults)) { const el = form.elements.namedItem(key); if (!el) continue; if (el.type === "checkbox") el.checked = settings[key]; else el.value = settings[key]; } form.querySelector("output").textContent = settings.brightness + "%"; form.elements.smoothingMs.disabled = !settings.smoothing; }
     fill(load());
+    form.elements.smoothing.addEventListener("change", () => { form.elements.smoothingMs.disabled = !form.elements.smoothing.checked; });
     form.elements.brightness.addEventListener("input", e => form.querySelector("output").textContent = e.target.value + "%");
     form.addEventListener("submit", e => { e.preventDefault(); const value = {}; for (const key of Object.keys(defaults)) { const el = form.elements.namedItem(key); value[key] = el.type === "checkbox" ? el.checked : el.value; } const ok = save(value); fill(normalize(value)); form.querySelector(".save-status").textContent = ok ? "Настройки сохранены" : "Не удалось сохранить настройки"; });
     form.querySelector(".reset-settings").addEventListener("click", () => { const ok = save(defaults); fill(defaults); form.querySelector(".save-status").textContent = ok ? "Настройки сброшены" : "Хранилище недоступно"; });
