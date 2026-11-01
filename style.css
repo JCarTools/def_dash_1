@@ -81,3 +81,43 @@ dialog .settings-shell{display:flex;flex-direction:column;max-height:88vh}dialog
 }
 @media(max-width:800px){.metric-icon{width:24px;height:28px}.metric-icon svg{width:24px;height:24px}.music-artist{font-size:12px}.music-caption{font-size:8px}.music-info strong{font-size:16px}}
 .light .metric-icon{color:#54768c}.light .music-caption,.light .music-artist,.light .navigation>div>span,.light .center-bottom{color:#506f84}
+
+/* Header-free cockpit: keep useful indicators close to their instruments. */
+.well-caption{display:flex;align-items:center;justify-content:center;gap:18px}
+.well-caption>.turn{margin:0;font-size:30px;letter-spacing:0}
+.center-bottom time{font-size:24px;font-weight:400;color:var(--text);font-variant-numeric:tabular-nums;letter-spacing:1px}
+.bottomline .connection{font-size:12px;letter-spacing:.5px}
+@media(min-width:801px){
+ .dashboard{grid-template-rows:minmax(0,1fr) auto auto;padding-top:10px}
+ .well{grid-template-rows:34px minmax(0,1fr)}
+ .well-caption{font-size:16px;letter-spacing:1.2px;color:#b0c1cd}
+ .digital span{font-size:19px;color:#b0c4d2}
+ .gauge-bottom{font-size:14px;letter-spacing:1px;color:#97adbd}
+ .center-column{height:calc(100% - 36px);grid-template-rows:30px minmax(40px,1fr) 90px 96px 44px}
+ .music-hidden .center-column{grid-template-rows:30px minmax(40px,1fr) 90px 44px}
+ .map-topline{font-size:16px;letter-spacing:.5px}.map-topline>span:last-child{font-size:13px}
+ .navigation strong{font-size:28px}.navigation>div>span{font-size:18px;color:#aec0cc}
+ .nav-symbol{font-size:42px}.nav-limit{width:46px;height:46px;font-size:20px;flex:none}
+ .music-card{height:86px;gap:14px}.music-art{width:64px;height:64px}
+ .music-caption{font-size:12px;color:#a0b8c8}.music-info strong{font-size:23px}.music-artist{font-size:17px;color:#aec0cc}
+ .center-bottom{font-size:16px}.center-bottom #demoLabel{font-size:11px}
+ .metric small{font-size:16px;letter-spacing:.7px;color:#adc0cd}.metric strong{font-size:34px}.metric em{font-size:19px}
+ .metric strong.tpms-value{font-size:21px}.metric-icon{width:36px;height:40px}.metric-icon svg{width:34px;height:34px;stroke-width:1.7}
+ .bottomline{font-size:12px;letter-spacing:.4px}.reserve{font-size:14px}
+}
+@media(min-width:801px) and (max-width:1400px){
+ .metric{padding-left:14px;padding-right:14px;gap:10px}.metric small{font-size:13px;letter-spacing:.3px}.metric strong.tpms-value{font-size:17px}
+ .navigation strong{font-size:23px}.navigation>div>span{font-size:16px}.music-info strong{font-size:20px}.music-artist{font-size:16px}
+ .well-caption{font-size:14px}.metric-icon{width:30px}.metric-icon svg{width:30px;height:30px}.fuel-track{width:35px}
+}
+@media(max-height:550px) and (min-width:801px){
+ .dashboard{padding-top:4px}.center-column{height:100%;grid-template-rows:26px minmax(40px,1fr) 64px 72px 36px}
+ .music-hidden .center-column{grid-template-rows:26px minmax(40px,1fr) 64px 36px}
+ .music-card{height:66px;margin-bottom:6px}.music-art{width:50px;height:50px}.music-caption{display:none}
+ .music-info strong{font-size:19px}.music-artist{font-size:15px}.navigation strong{font-size:22px}.navigation>div>span{font-size:15px}
+ .center-bottom{font-size:14px}.center-bottom time{font-size:22px}.well{grid-template-rows:28px minmax(0,1fr)}
+ .well-caption{font-size:13px}.digital span{font-size:16px}.gauge-bottom{font-size:12px}
+ .metric small{font-size:12px}.metric strong{font-size:28px}.metric strong.tpms-value{font-size:16px}.metric em{font-size:16px}
+ .bottomline,.bottomline .connection{font-size:10px}
+}
+@media(max-width:800px){.well-caption{font-size:11px;gap:8px}.well-caption>.turn{font-size:24px}.center-bottom{font-size:13px}.bottomline .connection{font-size:9px}}
