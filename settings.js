@@ -1,10 +1,11 @@
 (function (global) {
   "use strict";
   const KEY = "j-instrument-settings-v1";
-  const defaults = { theme: "dark", accent: "ice", brightness: 100, speedMax: 240, rpmMax: 8000,
+  const defaults = { language: "ru", theme: "dark", accent: "ice", brightness: 100, speedMax: 240, rpmMax: 8000,
     redline: 6000, pollMs: 100, map: true, music: true, mapFit: "cover", smoothing: true, smoothingMs: 180, demo: false };
   function normalize(input) {
     const out = { ...defaults, ...input };
+    out.language = out.language === "en" ? "en" : "ru";
     out.theme = ["dark", "light"].includes(out.theme) ? out.theme : "dark";
     out.accent = ["ice", "amber", "white"].includes(out.accent) ? out.accent : "ice";
     for (const [key, allowed] of Object.entries({ speedMax: [180, 220, 240, 260], rpmMax: [6000, 8000], pollMs: [100, 200, 400], smoothingMs: [80, 120, 180, 250, 350, 500] }))
@@ -21,7 +22,8 @@
   function field(label, name, options, note) { return `<label class="setting"><span>${label}</span><select name="${name}">${options.map(([value, text]) => `<option value="${value}">${text}</option>`).join("")}</select>${note ? `<small>${note}</small>` : ""}</label>`; }
   function mount(root, standalone = false) {
     if (!root) return;
-    root.innerHTML = `<form class="settings-shell"><div class="settings-head"><div><span class="eyebrow">J · PERSONAL COCKPIT</span><h2 id="settingsTitle">Ваша приборная панель</h2><p>Настройте отображение под себя</p></div>${standalone ? "" : '<button type="button" class="close-settings" aria-label="Закрыть">×</button>'}</div><div class="settings-grid">`
+    root.innerHTML = `<form class="settings-shell"><div class="settings-head"><div><span class="eyebrow">J</span><h2 id="settingsTitle">Ваша приборная панель</h2><p>Настройте отображение под себя</p></div>${standalone ? "" : '<button type="button" class="close-settings" aria-label="Закрыть">×</button>'}</div><div class="settings-grid">`
+      + field("Язык", "language", [["ru", "Русский"], ["en", "English"]])
       + field("Оформление", "theme", [["dark", "Ночное · графит"], ["light", "Дневное · серебро"]])
       + field("Акцент", "accent", [["ice", "Ледяной голубой"], ["amber", "Тёплый янтарь"], ["white", "Платиновый белый"]])
       + `<label class="setting"><span>Яркость панели <output id="brightnessOutput"></output></span><input name="brightness" type="range" min="40" max="100" step="5"></label>`
@@ -35,10 +37,12 @@
     const form = root.querySelector("form");
     function fill(settings) { for (const key of Object.keys(defaults)) { const el = form.elements.namedItem(key); if (!el) continue; if (el.type === "checkbox") el.checked = settings[key]; else el.value = settings[key]; } form.querySelector("output").textContent = settings.brightness + "%"; form.elements.smoothingMs.disabled = !settings.smoothing; }
     fill(load());
+    DashI18n.apply(root, load().language);
+    form.elements.language.addEventListener("change", () => DashI18n.apply(root, form.elements.language.value));
     form.elements.smoothing.addEventListener("change", () => { form.elements.smoothingMs.disabled = !form.elements.smoothing.checked; });
     form.elements.brightness.addEventListener("input", e => form.querySelector("output").textContent = e.target.value + "%");
-    form.addEventListener("submit", e => { e.preventDefault(); const value = {}; for (const key of Object.keys(defaults)) { const el = form.elements.namedItem(key); value[key] = el.type === "checkbox" ? el.checked : el.value; } const ok = save(value); fill(normalize(value)); form.querySelector(".save-status").textContent = ok ? "Настройки сохранены" : "Не удалось сохранить настройки"; });
-    form.querySelector(".reset-settings").addEventListener("click", () => { const ok = save(defaults); fill(defaults); form.querySelector(".save-status").textContent = ok ? "Настройки сброшены" : "Хранилище недоступно"; });
+    form.addEventListener("submit", e => { e.preventDefault(); const value = {}; for (const key of Object.keys(defaults)) { const el = form.elements.namedItem(key); value[key] = el.type === "checkbox" ? el.checked : el.value; } const ok = save(value); fill(normalize(value)); form.querySelector(".save-status").textContent = DashI18n.t(ok ? "Настройки сохранены" : "Не удалось сохранить настройки", value.language); });
+    form.querySelector(".reset-settings").addEventListener("click", () => { const ok = save(defaults); fill(defaults); DashI18n.apply(root, defaults.language); form.querySelector(".save-status").textContent = ok ? "Настройки сброшены" : "Хранилище недоступно"; });
     const close = form.querySelector(".close-settings"); if (close) close.addEventListener("click", () => root.closest("dialog").close());
   }
   global.DashSettings = Object.freeze({ load, save, normalize, mount });

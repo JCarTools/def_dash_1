@@ -9,7 +9,9 @@
   const previewDemo = params.get("demo") === "1";
   let fixedPreview = params.has("speed") || params.has("rpm");
   let wasDemoMode = false;
+  let lastHud = null, lastMusic = null;
   let musicReceived = false, artworkSource = "", musicGeneration = 0;
+  const t = text => DashI18n.t(text, settings.language);
   const palette = { ice: ["#69daef", "105,218,239"], amber: ["#e7b878", "231,184,120"], white: ["#dce9f3", "220,233,243"] };
   function number(...values) { for (const value of values) { if (value === null || value === undefined || value === "" || typeof value === "boolean") continue; const n = Number(value); if (Number.isFinite(n)) return n; } return null; }
   function boolean(value) { if (value === true || value === 1 || value === "1") return true; if (value === false || value === 0 || value === "0") return false; return null; }
@@ -78,7 +80,7 @@
       const img = $("mapImage");
       img.src = src; img.hidden = false;
       mapLastTimestamp = timestamp; mapSeen = Date.now();
-      $("mapLive").textContent = "LIVE"; $("mapLive").hidden = false;
+      $("mapLive").textContent = t("СЕЙЧАС"); $("mapLive").hidden = false;
       $("demoMap").toggleAttribute("hidden", true);
       finish();
     };
@@ -88,30 +90,32 @@
   }
   function hud(data) {
     if (!data) return;
-    if (data.naviOn === false && data.aradarOn !== true) { $("navDistance").textContent = "Маршрут не задан"; $("navRoad").textContent = "Навигационные подсказки"; $("navLimit").hidden = true; return; }
+    lastHud = data;
+    if (data.naviOn === false && data.aradarOn !== true) { $("navDistance").textContent = t("Маршрут не задан"); $("navRoad").textContent = t("Навигационные подсказки"); $("navLimit").hidden = true; return; }
     const distance = number(data.turnDist, data.turnDistance);
-    if (distance !== null && distance >= 0) $("navDistance").textContent = distance >= 1000 ? `${(distance/1000).toFixed(1)} км` : `${Math.round(distance)} м`;
-    if (typeof data.nextRoad === "string") $("navRoad").textContent = data.nextRoad || "Следуйте по маршруту";
+    if (distance !== null && distance >= 0) $("navDistance").textContent = distance >= 1000 ? `${(distance/1000).toFixed(1)} ${settings.language === "en" ? "km" : "км"}` : `${Math.round(distance)} ${settings.language === "en" ? "m" : "м"}`;
+    if (typeof data.nextRoad === "string") $("navRoad").textContent = data.nextRoad || t("Следуйте по маршруту");
     const type = number(data.turnType); $("navSymbol").textContent = [2,4,6].includes(type) ? "↰" : [3,5,7].includes(type) ? "↱" : [8,19].includes(type) ? "↶" : type === 15 ? "⚑" : "↑";
     const limit = number(data.speedLimit); $("navLimit").hidden = limit === null || limit <= 0; if (limit !== null) $("navLimit").textContent = Math.round(limit);
   }
   function clearMusic() {
-    musicGeneration++; artworkSource = ""; musicReceived = false;
+    lastMusic = null; musicGeneration++; artworkSource = ""; musicReceived = false;
     $("musicArtwork").hidden = true; $("musicArtwork").removeAttribute("src");
-    $("musicTitle").textContent = "Ничего не играет";
-    $("musicArtist").textContent = "Название трека появится здесь";
-    $("musicCaption").textContent = "МУЗЫКА"; $("musicBars").classList.remove("playing");
+    $("musicTitle").textContent = t("Ничего не играет");
+    $("musicArtist").textContent = t("Название трека появится здесь");
+    $("musicCaption").textContent = t("МУЗЫКА"); $("musicBars").classList.remove("playing");
   }
   function music(data) {
     if (!data || typeof data !== "object") return;
+    lastMusic = { ...lastMusic, ...data };
     musicReceived = true;
-    if (Object.prototype.hasOwnProperty.call(data, "SongName")) $("musicTitle").textContent = typeof data.SongName === "string" && data.SongName.trim() ? data.SongName : "Название не указано";
-    if (Object.prototype.hasOwnProperty.call(data, "SongArtist")) $("musicArtist").textContent = typeof data.SongArtist === "string" && data.SongArtist.trim() ? data.SongArtist : "Исполнитель не указан";
+    if (Object.prototype.hasOwnProperty.call(data, "SongName")) $("musicTitle").textContent = typeof data.SongName === "string" && data.SongName.trim() ? data.SongName : t("Название не указано");
+    if (Object.prototype.hasOwnProperty.call(data, "SongArtist")) $("musicArtist").textContent = typeof data.SongArtist === "string" && data.SongArtist.trim() ? data.SongArtist : t("Исполнитель не указан");
     const status = String(data.PlayStat || "").toUpperCase();
     if (status) {
       const playing = ["PLAY", "PLAYING", "STATE_PLAYING"].includes(status);
       const paused = ["PAUSE", "PAUSED", "STATE_PAUSED"].includes(status);
-      $("musicCaption").textContent = playing ? "СЕЙЧАС ИГРАЕТ" : paused ? "НА ПАУЗЕ" : "МУЗЫКА";
+      $("musicCaption").textContent = playing ? t("СЕЙЧАС ИГРАЕТ") : paused ? t("НА ПАУЗЕ") : t("МУЗЫКА");
       $("musicBars").classList.toggle("playing", playing);
     }
     // JCarTools sends artwork only when it changes. Missing field keeps the existing cover.
@@ -143,14 +147,17 @@
     if (!document.hidden) { bridge.start(); mapSubscription(settings.map); }
   }
   function applySettings(value) {
-    settings = value; const [accent, rgb] = palette[settings.accent];
+    const languageChanged = settings.language !== value.language;
+    settings = value; DashI18n.apply($("dashboard"), settings.language); const [accent, rgb] = palette[settings.accent];
     document.documentElement.style.setProperty("--accent", accent); document.documentElement.style.setProperty("--accent-rgb", rgb);
     document.documentElement.style.setProperty("--brightness", settings.brightness/100);
     document.body.classList.toggle("light", settings.theme === "light");
     $("musicCard").hidden = !settings.music; $("dashboard").classList.toggle("music-hidden", !settings.music);
     $("mapCard").classList.toggle("contain", settings.mapFit === "contain"); $("dashboard").classList.toggle("map-disabled", !settings.map);
-    $("mapPlaceholderTitle").textContent = settings.map ? "Ваш маршрут — в центре" : "Мини-карта отключена";
-    $("mapPlaceholderText").textContent = settings.map ? "Карта появится после подключения навигации" : "Включите карту в настройках панели";
+    $("mapPlaceholderTitle").textContent = settings.map ? t("Ваш маршрут — в центре") : t("Мини-карта отключена");
+    $("mapPlaceholderText").textContent = settings.map ? t("Карта появится после подключения навигации") : t("Включите карту в настройках панели");
+    if (lastHud) hud(lastHud);
+    if (lastMusic) music(lastMusic); else if (languageChanged || !musicReceived) { clearMusic(); }
     buildGauge("speedGauge", settings.speedMax, false); buildGauge("rpmGauge", settings.rpmMax, true);
     if (bridge) bridge.setInterval(settings.pollMs);
     if (!settings.map) clearMap();
@@ -167,37 +174,34 @@
     $("highBeam").classList.toggle("active", !!beam && boolean(beam.data.highBeam ?? beam.data.active ?? beam.data.value) === true);
     let known = 0, warnings = 0;
     ["fl", "fr", "rl", "rr"].forEach((wheel, index) => { const warning = tpms ? number(tpms.data[wheel+"Warning"]) : null; const valid = warning === 0 || warning === 1; if (valid) known++; if (warning === 1) warnings++; const dot = $("wheelDots").children[index]; dot.className = valid ? warning ? "warn" : "ok" : ""; });
-    $("tpmsValue").textContent = warnings ? `Предупреждений: ${warnings}` : known === 4 ? "Без предупреждений" : "Нет данных";
+    $("tpmsValue").textContent = warnings ? `${settings.language === "en" ? "Warnings" : "Предупреждений"}: ${warnings}` : known === 4 ? t("Без предупреждений") : t("Нет данных");
     $("tpmsValue").classList.toggle("warn-text", warnings > 0);
-    const now = new Date(); $("clock").textContent = now.toLocaleTimeString("ru-RU",{hour:"2-digit",minute:"2-digit"}); $("dateLabel").textContent = now.toLocaleDateString("ru-RU",{day:"numeric",month:"long"});
+    const now = new Date(); $("clock").textContent = now.toLocaleTimeString("ru-RU",{hour:"2-digit",minute:"2-digit"}); $("dateLabel").textContent = now.toLocaleDateString(settings.language === "en" ? "en-GB" : "ru-RU",{day:"numeric",month:"long"});
     const demo = !api && (previewDemo || settings.demo || fixedPreview); $("demoLabel").hidden = !demo;
     $("demoMap").toggleAttribute("hidden", !demo || !settings.map);
     if (mapSeen && !$("mapImage").hidden) {
-      $("mapLive").textContent = "LIVE";
+      $("mapLive").textContent = t("СЕЙЧАС");
       $("mapLive").hidden = Date.now()-mapSeen > 10000;
     }
-    const speed = fresh("speed",2000), rpm = fresh("rpm",2000), live = !!speed && !!rpm;
-    const text = demo ? "ДЕМОНСТРАЦИЯ" : status === "timeout" ? "НЕТ ОТВЕТА" : live ? "ДАННЫЕ АВТОМОБИЛЯ" : api ? "ОЖИДАНИЕ ДАННЫХ" : "НЕТ ПОДКЛЮЧЕНИЯ";
-    $("connection").className = `connection ${live ? "live" : api ? "warning" : ""}`; $("connection").querySelector("span").textContent = text;
-    $("dataHint").textContent = demo ? "Демо · синтетические показания" : status === "timeout" ? "Запрос задержан · повторы приостановлены до ответа" : !api ? "Откройте в JCarTools · для предпросмотра добавьте ?demo=1" : live ? `Профиль J · асинхронное чтение · интервал ${settings.pollMs} мс` : "Ожидание актуальных ответов профиля J";
+
   }
   function frame(time) {
     const dt = lastFrame ? Math.min((time-lastFrame)/1000,.1) : .016; lastFrame = time;
     const demo = !api && (previewDemo || settings.demo || fixedPreview);
-    if (wasDemoMode && !demo) { for (const key of Object.keys(state)) delete state[key]; shown.speed = shown.rpm = 0; clearMusic(); clearMap(); $("navDistance").textContent = "Маршрут не задан"; $("navRoad").textContent = "Навигационные подсказки"; }
+    if (wasDemoMode && !demo) { for (const key of Object.keys(state)) delete state[key]; shown.speed = shown.rpm = 0; clearMusic(); clearMap(); $("navDistance").textContent = t("Маршрут не задан"); $("navRoad").textContent = t("Навигационные подсказки"); }
     wasDemoMode = demo;
     if (demo) {
       const phase = time/1000;
       if (!musicReceived) {
-        $("musicTitle").textContent = "Night Drive"; $("musicArtist").textContent = "Instrument Sessions · демо";
-        $("musicCaption").textContent = "СЕЙЧАС ИГРАЕТ · ДЕМО";
+        $("musicTitle").textContent = t("Ночная поездка"); $("musicArtist").textContent = t("Instrument Sessions · демо");
+        $("musicCaption").textContent = t("СЕЙЧАС ИГРАЕТ · ДЕМО");
         $("musicArtwork").src = "demo-cover.svg"; $("musicArtwork").hidden = false;
         $("musicBars").classList.add("playing"); musicReceived = true;
       }
       receive("speed",{value:fixedPreview ? number(params.get("speed")) ?? 96 : 86+22*Math.sin(phase/7)});
       receive("rpm",{value:fixedPreview ? number(params.get("rpm")) ?? 2350 : 2300+700*Math.sin(phase/7+.3)});
       receive("fuel",{percent:64}); receive("battery",{value:14.2}); receive("outTemp",{value:12}); receive("tpms",{flWarning:0,frWarning:0,rlWarning:0,rrWarning:0});
-      if (!fixedPreview) { $("navDistance").textContent="350 м"; $("navRoad").textContent="Демонстрационный маршрут"; $("navSymbol").textContent="↱"; }
+      if (!fixedPreview) { $("navDistance").textContent=settings.language === "en" ? "350 m" : "350 м"; $("navRoad").textContent=t("Демонстрационный маршрут"); $("navSymbol").textContent="↱"; }
     }
     const smooth = settings.smoothing && !matchMedia("(prefers-reduced-motion: reduce)").matches;
     const smoothingSeconds = settings.smoothingMs / 1000;
