@@ -246,3 +246,62 @@ dialog .settings-shell{display:flex;flex-direction:column;max-height:88vh}dialog
 }
 @media(max-height:550px) and (min-width:801px){.clock-metric #dateLabel{font-size:17px}}
 @media(max-width:800px){.clock-metric #dateLabel{font-size:18px}}
+
+/* Shared alignment and spacing for the final cockpit composition. */
+@media(min-width:801px){
+ .dashboard{padding:12px 30px 12px;gap:12px}
+ .instruments{padding-bottom:0;gap:18px}
+ .center-column,.music-hidden .center-column{height:calc(100% - 40px);padding:0 6px;grid-template-rows:26px minmax(40px,1fr) 76px}
+ .map-topline{margin:0 4px 10px}
+ .navigation{padding:12px 4px 0;gap:14px;align-items:center}
+ .navigation strong{font-size:28px;line-height:1.15}.navigation>div>span{margin-top:7px;font-size:18px}
+ .turn-floating{top:-8px;transform:translateX(-50%);font-size:64px;line-height:1}
+ .turn-left{left:29%}.turn-right{left:71%}
+ .telemetry{margin:0;padding:12px 0;min-height:96px;border-radius:18px;grid-template-columns:1fr 1fr .9fr .7fr 2.05fr .95fr .5fr;align-items:stretch}
+ .music-hidden .telemetry{grid-template-columns:1.1fr 1.1fr 1fr .85fr 1fr .55fr}
+ .metric{padding:0 20px;gap:14px;align-items:center}
+ .metric>div:not(.fuel-track):not(.wheel-dots){min-width:0}
+ .metric small{font-size:14px;line-height:18px;letter-spacing:.6px}
+ .metric strong{font-size:32px;line-height:36px;margin-top:5px}
+ .metric em{font-size:18px;margin-left:5px}
+ .metric-icon{width:32px;height:36px}.metric-icon svg{width:32px;height:32px}
+ .fuel-track{display:none}
+ .tpms-metric .wheel-dots{grid-template-columns:8px 8px;gap:5px 14px;margin-top:8px;height:33px;align-content:center}
+ .tpms-metric .wheel-dots i{width:8px;height:11px}
+ .music-metric .music-card{min-height:64px;gap:14px}
+ .music-metric .music-art{width:60px;height:60px;border-radius:10px}
+ .music-metric .music-caption{font-size:11px;line-height:14px;letter-spacing:.6px;margin-bottom:4px}
+ .music-metric .music-info strong{font-size:22px;line-height:26px;margin:0}
+ .music-metric .music-artist{font-size:17px;line-height:21px;margin-top:3px}
+ .clock-metric time{font-size:32px;line-height:36px;letter-spacing:1px}
+ .clock-metric #dateLabel{font-size:20px;line-height:24px;margin-top:5px}
+ .indicators-metric{padding-left:12px;padding-right:12px;align-content:center}
+ .indicators-metric .beam svg{width:38px;height:30px}
+}
+@media(min-width:801px) and (max-width:1400px){
+ .dashboard{padding:10px 22px;gap:10px}
+ .metric{padding:0 12px;gap:9px}.metric small{font-size:12px;letter-spacing:.2px}
+ .metric strong{font-size:28px}.metric-icon,.metric-icon svg{width:27px;height:30px}
+ .music-metric .music-art{width:48px;height:48px}.music-metric .music-card{gap:10px}
+ .music-metric .music-info strong{font-size:19px}.music-metric .music-artist{font-size:15px}
+ .clock-metric time{font-size:28px}.clock-metric #dateLabel{font-size:18px}
+ .turn-floating{font-size:54px;top:-5px}
+}
+@media(max-height:550px) and (min-width:801px){
+ .dashboard{padding-top:8px;padding-bottom:8px;gap:8px}
+ .telemetry{min-height:76px;padding:8px 0}
+ .center-column,.music-hidden .center-column{height:calc(100% - 22px);grid-template-rows:24px minmax(40px,1fr) 60px}
+ .navigation strong{font-size:22px}.navigation>div>span{font-size:15px;margin-top:4px}
+ .turn-floating{font-size:48px;top:-6px}
+ .music-metric .music-card{min-height:56px}
+}
+
+/* Turn indicators follow the map, with equal side margins. */
+.map-anchor{position:relative;min-width:0;min-height:0;height:100%}
+.map-anchor>.map-card{height:100%}
+.map-anchor>.turn-floating{top:0;left:auto;transform:translateY(-50%);font-size:64px;line-height:1}
+.map-anchor>.turn-left{right:100%;margin-right:38px}
+.map-anchor>.turn-right{left:100%;margin-left:38px}
+@media(min-width:801px) and (max-width:1400px){.map-anchor>.turn-floating{font-size:54px}.map-anchor>.turn-left{margin-right:26px}.map-anchor>.turn-right{margin-left:26px}}
+@media(max-height:550px) and (min-width:801px){.map-anchor>.turn-floating{font-size:48px}}
+@media(max-width:800px){.map-anchor{height:auto}.map-anchor>.map-card{height:auto}.map-anchor>.turn-floating{font-size:32px}.map-anchor>.turn-left{margin-right:8px}.map-anchor>.turn-right{margin-left:8px}}
