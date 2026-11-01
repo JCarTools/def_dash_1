@@ -123,3 +123,61 @@ dialog .settings-shell{display:flex;flex-direction:column;max-height:88vh}dialog
 @media(max-width:800px){.well-caption{font-size:11px;gap:8px}.well-caption>.turn{font-size:24px}.center-bottom{font-size:13px}.bottomline .connection{font-size:9px}}
 
 @media(min-width:801px){.dashboard{grid-template-rows:minmax(0,1fr) auto}.well{grid-template-rows:30px minmax(0,1fr)}}
+
+/* Clock and status share the lower instrument strip; map gains their old row. */
+.clock-metric time{display:block;font-size:34px;line-height:1.2;font-weight:300;font-variant-numeric:tabular-nums;letter-spacing:1px}
+.clock-metric #dateLabel{display:block;margin-top:4px;font-size:16px;color:#adc0cd;white-space:nowrap}
+.indicators-metric{justify-content:center;gap:12px;flex-wrap:wrap}
+.indicators-metric .beam{display:grid;place-items:center}
+.indicators-metric .beam svg{width:42px;height:32px;stroke-width:1.8}
+.indicators-metric #demoLabel{font-size:12px;color:#b8a775}
+.light .clock-metric #dateLabel{color:#506f84}
+@media(min-width:801px){
+ .telemetry{grid-template-columns:1.1fr 1fr 1fr 1.3fr .85fr .55fr}
+ .metric{padding-left:20px;padding-right:20px;gap:12px}
+ .fuel-track{width:48px}
+ .center-column{grid-template-rows:30px minmax(40px,1fr) 90px 96px}
+ .music-hidden .center-column{grid-template-rows:30px minmax(40px,1fr) 90px}
+ .music-card{margin-bottom:0}
+}
+@media(min-width:801px) and (max-width:1400px){
+ .metric{padding-left:12px;padding-right:12px;gap:8px}
+ .metric small{font-size:12px}.metric strong.tpms-value{font-size:15px}
+ .fuel-track{width:25px}.wheel-dots{gap:6px 10px}
+ .clock-metric time{font-size:30px}.clock-metric #dateLabel{font-size:14px}
+ .indicators-metric .beam svg{width:34px;height:28px}
+}
+@media(max-height:550px) and (min-width:801px){
+ .center-column{grid-template-rows:26px minmax(40px,1fr) 64px 72px}
+ .music-hidden .center-column{grid-template-rows:26px minmax(40px,1fr) 64px}
+ .music-card{margin-bottom:0}.clock-metric time{font-size:28px}.clock-metric #dateLabel{font-size:13px}
+}
+@media(max-width:800px){.clock-metric time{font-size:26px}.clock-metric #dateLabel{font-size:13px}.metric:nth-child(4){border-right:0}}
+
+/* Large turn signals sit in the open shoulders between map and dials. */
+.instruments{position:relative}
+.turn-floating{position:absolute;z-index:2;top:9%;font-size:64px;line-height:1;pointer-events:none;transform:translateX(-50%);color:#32434e}
+.turn-floating.active{color:#65ef9c;text-shadow:0 0 24px #65ef9c55}
+.turn-left{left:34.5%}.turn-right{left:65.5%}
+@media(min-width:801px){.well{grid-template-rows:minmax(0,1fr)}.turn-floating{font-size:72px;top:9%}}
+@media(max-height:550px) and (min-width:801px){.turn-floating{font-size:56px;top:8%}}
+@media(max-width:800px){.turn-floating{top:8px;font-size:42px}.turn-left{left:43%}.turn-right{left:57%}}
+
+/* Use the released caption space for larger dials and readable dial typography. */
+@media(min-width:801px){
+ .dashboard{padding-left:24px;padding-right:24px}
+ .instruments{grid-template-columns:minmax(0,1fr) minmax(230px,.68fr) minmax(0,1fr);gap:8px;padding-top:0;padding-bottom:8px}
+ .well{overflow:visible}
+ .gauge{width:calc(100% + 18px);max-width:none;justify-self:center}
+ .dial-label{font-size:25px;font-weight:400}
+ .digital strong{font-size:clamp(60px,11.5vh,98px);letter-spacing:-2px}
+ .digital span{font-size:23px;letter-spacing:.6px;margin-top:6px}
+ .digital{top:58%}
+ .center-column{padding-left:10px;padding-right:10px}
+ .turn-left{left:34.7%}.turn-right{left:65.3%}
+}
+@media(max-height:550px) and (min-width:801px){
+ .digital strong{font-size:clamp(46px,11.5vh,64px)}.digital span{font-size:19px}
+ .dial-label{font-size:26px}
+}
+@media(max-width:800px){.dial-label{font-size:26px}.digital strong{font-size:clamp(36px,10vw,76px)}.digital span{font-size:13px}}
