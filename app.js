@@ -11,7 +11,7 @@
   let wasDemoMode = false;
   let lastHud = null, lastMusic = null;
   let musicReceived = false, artworkSource = "", musicGeneration = 0;
-  const t = text => DashI18n.t(text, settings.language);
+  const t = text => window.DashI18n ? DashI18n.t(text, settings.language) : text;
   const palette = { ice: ["#69daef", "105,218,239"], amber: ["#e7b878", "231,184,120"], white: ["#dce9f3", "220,233,243"] };
   function number(...values) { for (const value of values) { if (value === null || value === undefined || value === "" || typeof value === "boolean") continue; const n = Number(value); if (Number.isFinite(n)) return n; } return null; }
   function boolean(value) { if (value === true || value === 1 || value === "1") return true; if (value === false || value === 0 || value === "0") return false; return null; }
@@ -148,7 +148,8 @@
   }
   function applySettings(value) {
     const languageChanged = settings.language !== value.language;
-    settings = value; DashI18n.apply($("dashboard"), settings.language); const [accent, rgb] = palette[settings.accent];
+    settings = value;
+    if (window.DashI18n) { try { DashI18n.apply($("dashboard"), settings.language); } catch (error) { console.warn("Translation unavailable", error); } } const [accent, rgb] = palette[settings.accent];
     document.documentElement.style.setProperty("--accent", accent); document.documentElement.style.setProperty("--accent-rgb", rgb);
     document.documentElement.style.setProperty("--brightness", settings.brightness/100);
     document.body.classList.toggle("light", settings.theme === "light");
