@@ -305,3 +305,48 @@ dialog .settings-shell{display:flex;flex-direction:column;max-height:88vh}dialog
 @media(min-width:801px) and (max-width:1400px){.map-anchor>.turn-floating{font-size:54px}.map-anchor>.turn-left{margin-right:26px}.map-anchor>.turn-right{margin-left:26px}}
 @media(max-height:550px) and (min-width:801px){.map-anchor>.turn-floating{font-size:48px}}
 @media(max-width:800px){.map-anchor{height:auto}.map-anchor>.map-card{height:auto}.map-anchor>.turn-floating{font-size:32px}.map-anchor>.turn-left{margin-right:8px}.map-anchor>.turn-right{margin-left:8px}}
+
+/* Larger lower-strip readings for the instrument display. */
+@media(min-width:801px){
+ .telemetry{min-height:116px;padding:14px 0}
+ .metric{gap:15px;padding-left:20px;padding-right:20px}
+ .metric small{font-size:17px;line-height:22px;letter-spacing:.3px}
+ .metric strong{font-size:40px;line-height:44px;margin-top:6px}
+ .metric em{font-size:23px;margin-left:6px}
+ .metric-icon{width:38px;height:44px}.metric-icon svg{width:38px;height:38px;stroke-width:1.7}
+ .tpms-metric .wheel-dots{grid-template-columns:11px 11px;gap:6px 16px;height:40px;margin-top:8px}
+ .tpms-metric .wheel-dots i{width:11px;height:15px;border-radius:3px}
+ .music-metric .music-card{min-height:78px;gap:16px}
+ .music-metric .music-art{width:74px;height:74px;border-radius:12px}
+ .music-metric .music-caption{font-size:13px;line-height:17px;margin-bottom:5px}
+ .music-metric .music-info strong{font-size:26px;line-height:31px;margin:0}
+ .music-metric .music-artist{font-size:20px;line-height:25px;margin-top:4px}
+ .clock-metric time{font-size:40px;line-height:44px}
+ .clock-metric #dateLabel{font-size:24px;line-height:29px;margin-top:6px}
+ .indicators-metric .beam svg{width:46px;height:36px}
+ .indicators-metric #demoLabel{font-size:14px}
+}
+@media(min-width:801px) and (max-width:1400px){
+ .telemetry{min-height:100px;padding:12px 0}.metric{padding-left:12px;padding-right:12px;gap:10px}
+ .metric small{font-size:14px;line-height:18px}.metric strong{font-size:34px;line-height:38px}.metric em{font-size:20px}
+ .metric-icon,.metric-icon svg{width:31px;height:34px}
+ .music-metric .music-card{gap:11px;min-height:68px}.music-metric .music-art{width:58px;height:58px}
+ .music-metric .music-caption{font-size:11px;line-height:14px}.music-metric .music-info strong{font-size:22px;line-height:26px}.music-metric .music-artist{font-size:17px;line-height:21px}
+ .clock-metric time{font-size:34px;line-height:38px}.clock-metric #dateLabel{font-size:21px;line-height:25px}
+ .tpms-metric .wheel-dots{grid-template-columns:9px 9px;gap:5px 12px;height:34px}.tpms-metric .wheel-dots i{width:9px;height:13px}
+ .indicators-metric .beam svg{width:38px;height:30px}
+}
+@media(max-height:550px) and (min-width:801px){.telemetry{min-height:94px;padding:10px 0}.music-metric .music-card{min-height:64px}.music-metric .music-art{width:56px;height:56px}}
+@media(max-width:800px){.metric small{font-size:11px}.metric strong{font-size:26px}.metric em{font-size:14px}.metric-icon,.metric-icon svg{width:28px;height:30px}.music-metric .music-info strong{font-size:20px}.music-metric .music-artist{font-size:15px}.clock-metric time{font-size:30px}.clock-metric #dateLabel{font-size:20px}}
+
+@media(min-width:801px){.route-idle .center-column,.route-idle.music-hidden .center-column{grid-template-rows:26px minmax(40px,1fr)}}
+@media(max-height:550px) and (min-width:801px){.route-idle .center-column,.route-idle.music-hidden .center-column{grid-template-rows:24px minmax(40px,1fr)}}
+
+/* A quiet map preview replaces the text placeholder until real frames arrive. */
+.map-placeholder{display:none}
+
+/* Original map illustration, without explanatory copy. */
+.map-placeholder{display:flex}
+.map-placeholder>strong,.map-placeholder>span{display:none}
+.map-placeholder>svg{margin-bottom:0}
+.map-card.has-map .map-placeholder{display:none}

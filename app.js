@@ -88,10 +88,16 @@
     decoded.onerror = finish;
     decoded.src = src;
   }
+  function routeVisible(visible) {
+    const block = $("navDistance").closest(".navigation");
+    block.hidden = !visible;
+    $("dashboard").classList.toggle("route-idle", !visible);
+  }
   function hud(data) {
     if (!data) return;
     lastHud = data;
-    if (data.naviOn === false && data.aradarOn !== true) { $("navDistance").textContent = t("Маршрут не задан"); $("navRoad").textContent = t("Навигационные подсказки"); $("navLimit").hidden = true; return; }
+    if (data.naviOn === false) { routeVisible(false); $("navDistance").textContent = t("Маршрут не задан"); $("navRoad").textContent = t("Навигационные подсказки"); $("navLimit").hidden = true; return; }
+    if (data.naviOn === true) routeVisible(true);
     const distance = number(data.turnDist, data.turnDistance);
     if (distance !== null && distance >= 0) $("navDistance").textContent = distance >= 1000 ? `${(distance/1000).toFixed(1)} ${settings.language === "en" ? "km" : "км"}` : `${Math.round(distance)} ${settings.language === "en" ? "m" : "м"}`;
     if (typeof data.nextRoad === "string") $("navRoad").textContent = data.nextRoad || t("Следуйте по маршруту");
@@ -182,7 +188,8 @@
     tirePanel.setAttribute("aria-label", warnings ? t("Внимание") : known === 4 ? t("Норма") : t("Нет данных"));
     const now = new Date(); $("clock").textContent = now.toLocaleTimeString("ru-RU",{hour:"2-digit",minute:"2-digit"}); $("dateLabel").textContent = now.toLocaleDateString(settings.language === "en" ? "en-GB" : "ru-RU",{day:"numeric",month:"long"});
     const demo = !api && (previewDemo || settings.demo || fixedPreview); $("demoLabel").hidden = !demo;
-    $("demoMap").toggleAttribute("hidden", !demo || !settings.map);
+    $("demoMap").toggleAttribute("hidden", !demo || !settings.map || !$("mapImage").hidden);
+    $("mapCard").classList.toggle("has-map", !$("mapImage").hidden || (demo && settings.map));
     if (mapSeen && !$("mapImage").hidden) {
       $("mapLive").textContent = t("СЕЙЧАС");
       $("mapLive").hidden = Date.now()-mapSeen > 10000;
@@ -192,8 +199,9 @@
   function frame(time) {
     const dt = lastFrame ? Math.min((time-lastFrame)/1000,.1) : .016; lastFrame = time;
     const demo = !api && (previewDemo || settings.demo || fixedPreview);
-    if (wasDemoMode && !demo) { for (const key of Object.keys(state)) delete state[key]; shown.speed = shown.rpm = 0; clearMusic(); clearMap(); $("navDistance").textContent = t("Маршрут не задан"); $("navRoad").textContent = t("Навигационные подсказки"); }
+    if (wasDemoMode && !demo) { for (const key of Object.keys(state)) delete state[key]; shown.speed = shown.rpm = 0; clearMusic(); clearMap(); lastHud = null; routeVisible(false); $("navDistance").textContent = t("Маршрут не задан"); $("navRoad").textContent = t("Навигационные подсказки"); }
     wasDemoMode = demo;
+    if (!demo && !lastHud) routeVisible(false);
     if (demo) {
       const phase = time/1000;
       if (!musicReceived) {
@@ -205,7 +213,7 @@
       receive("speed",{value:fixedPreview ? number(params.get("speed")) ?? 96 : 86+22*Math.sin(phase/7)});
       receive("rpm",{value:fixedPreview ? number(params.get("rpm")) ?? 2350 : 2300+700*Math.sin(phase/7+.3)});
       receive("fuel",{percent:64}); receive("battery",{value:14.2}); receive("outTemp",{value:12}); receive("tpms",{flWarning:0,frWarning:0,rlWarning:0,rrWarning:0});
-      if (!fixedPreview) { $("navDistance").textContent=settings.language === "en" ? "350 m" : "350 м"; $("navRoad").textContent=t("Демонстрационный маршрут"); $("navSymbol").textContent="↱"; }
+      if (!fixedPreview) { routeVisible(true); $("navDistance").textContent=settings.language === "en" ? "350 m" : "350 м"; $("navRoad").textContent=t("Демонстрационный маршрут"); $("navSymbol").textContent="↱"; }
     }
     const smooth = settings.smoothing && !matchMedia("(prefers-reduced-motion: reduce)").matches;
     const smoothingSeconds = settings.smoothingMs / 1000;
