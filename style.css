@@ -181,3 +181,68 @@ dialog .settings-shell{display:flex;flex-direction:column;max-height:88vh}dialog
  .dial-label{font-size:26px}
 }
 @media(max-width:800px){.dial-label{font-size:26px}.digital strong{font-size:clamp(36px,10vw,76px)}.digital span{font-size:13px}}
+
+/* One lower strip for vehicle readings, music, time and status. */
+.music-metric{min-width:0}
+.music-metric .music-card{width:100%;height:auto;min-height:64px;padding:0;margin:0;border:0;border-radius:0;background:none;gap:12px}
+.music-metric .music-art{width:56px;height:56px}
+.music-metric .music-caption{font-size:11px}
+.music-metric .music-info strong{font-size:20px}
+.music-metric .music-artist{font-size:15px}
+.music-metric .music-bars{display:none}
+.music-hidden .music-metric{display:none}
+@media(min-width:801px){
+ .telemetry{grid-template-columns:.95fr .85fr .8fr 1.2fr 1.5fr .75fr .45fr}
+ .music-hidden .telemetry{grid-template-columns:1.1fr 1fr 1fr 1.3fr .85fr .55fr}
+ .metric{padding-left:16px;padding-right:16px;gap:10px}
+ .metric small{font-size:14px;letter-spacing:.3px}
+ .metric strong.tpms-value{font-size:18px}
+ .fuel-track{width:30px}.wheel-dots{gap:7px 12px}
+ .center-column,.music-hidden .center-column{grid-template-rows:30px minmax(40px,1fr) 90px}
+ .turn-floating{top:16px;transform:translate(-50%,-10%)}
+ .turn-left{left:28.1%}.turn-right{left:71.9%}
+}
+@media(min-width:801px) and (max-width:1400px){
+ .metric{padding-left:10px;padding-right:10px;gap:7px}
+ .metric small{font-size:11px}.metric strong{font-size:28px}.metric strong.tpms-value{font-size:14px}
+ .metric-icon,.metric-icon svg{width:25px;height:28px}.fuel-track,.wheel-dots{display:none}
+ .music-metric .music-art{width:44px;height:44px}.music-metric .music-card{gap:8px}
+ .music-metric .music-caption{font-size:9px}.music-metric .music-info strong{font-size:16px}.music-metric .music-artist{font-size:12px}
+ .clock-metric time{font-size:26px}.clock-metric #dateLabel{font-size:12px}
+}
+@media(max-height:550px) and (min-width:801px){
+ .center-column,.music-hidden .center-column{grid-template-rows:26px minmax(40px,1fr) 64px}
+ .music-metric .music-card{min-height:50px}.music-metric .music-art{width:44px;height:44px}
+ .turn-floating{top:10px}
+}
+@media(max-width:800px){.music-metric{grid-column:1/-1;grid-row:3;border-right:0}.music-metric .music-card{min-height:64px}.clock-metric{border-right:1px solid var(--line)}}
+
+/* Tire status is conveyed by the panel icon and individual wheel colors. */
+.tpms-metric .metric-icon,.tpms-metric small{color:#71818d}
+.tpms-metric.tpms-ok .metric-icon,.tpms-metric.tpms-ok small{color:#65df91}
+.tpms-metric.tpms-warning .metric-icon,.tpms-metric.tpms-warning small{color:#f16c6c}
+.tpms-metric .wheel-dots i{background:#64727e}
+.tpms-metric .wheel-dots i.ok{background:#65df91}
+.tpms-metric .wheel-dots i.warn{background:#f16c6c}
+@media(min-width:801px) and (max-width:1400px){.tpms-metric .wheel-dots{display:grid}}
+
+/* Match the tire metric hierarchy to the other lower-strip readings. */
+.tpms-metric small,.tpms-metric.tpms-ok small,.tpms-metric.tpms-warning small{color:#adc0cd}
+.tpms-info{min-width:0}
+.tpms-metric .wheel-dots{display:grid;grid-template-columns:9px 9px;gap:5px 16px;margin:9px 0 0;width:max-content}
+.tpms-metric .wheel-dots i{width:9px;height:12px;border-radius:3px}
+.light .tpms-metric small{color:#526d80}
+.clock-metric #dateLabel{font-size:20px;line-height:1.25;margin-top:5px}
+@media(min-width:801px){
+ .telemetry{grid-template-columns:.95fr .85fr .8fr .68fr 2fr .85fr .45fr}
+ .music-hidden .telemetry{grid-template-columns:1.1fr 1fr 1fr .85fr .95fr .55fr}
+ .music-metric .music-info strong{font-size:22px}
+ .music-metric .music-artist{font-size:17px}
+}
+@media(min-width:801px) and (max-width:1400px){
+ .clock-metric #dateLabel{font-size:17px}
+ .music-metric .music-info strong{font-size:18px}.music-metric .music-artist{font-size:14px}
+ .tpms-metric .wheel-dots{gap:4px 12px;margin-top:7px}.tpms-metric .wheel-dots i{width:8px;height:10px}
+}
+@media(max-height:550px) and (min-width:801px){.clock-metric #dateLabel{font-size:17px}}
+@media(max-width:800px){.clock-metric #dateLabel{font-size:18px}}

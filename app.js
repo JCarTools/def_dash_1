@@ -175,8 +175,11 @@
     $("highBeam").classList.toggle("active", !!beam && boolean(beam.data.highBeam ?? beam.data.active ?? beam.data.value) === true);
     let known = 0, warnings = 0;
     ["fl", "fr", "rl", "rr"].forEach((wheel, index) => { const warning = tpms ? number(tpms.data[wheel+"Warning"]) : null; const valid = warning === 0 || warning === 1; if (valid) known++; if (warning === 1) warnings++; const dot = $("wheelDots").children[index]; dot.className = valid ? warning ? "warn" : "ok" : ""; });
-    $("tpmsValue").textContent = warnings ? `${settings.language === "en" ? "Warnings" : "Предупреждений"}: ${warnings}` : known === 4 ? t("Без предупреждений") : t("Нет данных");
-    $("tpmsValue").classList.toggle("warn-text", warnings > 0);
+    $("tpmsValue").textContent = "";
+    const tirePanel = $("wheelDots").closest(".tpms-metric");
+    tirePanel.classList.toggle("tpms-ok", known === 4 && warnings === 0);
+    tirePanel.classList.toggle("tpms-warning", warnings > 0);
+    tirePanel.setAttribute("aria-label", warnings ? t("Внимание") : known === 4 ? t("Норма") : t("Нет данных"));
     const now = new Date(); $("clock").textContent = now.toLocaleTimeString("ru-RU",{hour:"2-digit",minute:"2-digit"}); $("dateLabel").textContent = now.toLocaleDateString(settings.language === "en" ? "en-GB" : "ru-RU",{day:"numeric",month:"long"});
     const demo = !api && (previewDemo || settings.demo || fixedPreview); $("demoLabel").hidden = !demo;
     $("demoMap").toggleAttribute("hidden", !demo || !settings.map);
