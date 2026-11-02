@@ -350,3 +350,13 @@ dialog .settings-shell{display:flex;flex-direction:column;max-height:88vh}dialog
 .map-placeholder>strong,.map-placeholder>span{display:none}
 .map-placeholder>svg{margin-bottom:0}
 .map-card.has-map .map-placeholder{display:none}
+
+/* Intrinsic map/text dimensions must never widen the center grid track. */
+.center-column{grid-template-columns:minmax(0,1fr);max-width:100%;width:100%}
+.center-column>.map-topline,.center-column>.map-anchor,.center-column>.navigation{min-width:0;max-width:100%;width:100%;box-sizing:border-box}
+.map-anchor>.map-card{min-width:0;max-width:100%;width:100%;box-sizing:border-box}
+.map-card>img,.map-card>.demo-map{min-width:0;max-width:100%}
+.navigation{overflow:hidden}
+.navigation>div{flex:1 1 0%;min-width:0;max-width:100%;overflow:hidden}
+.navigation strong,.navigation>div>span{max-width:100%;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.nav-symbol,.nav-limit{flex-shrink:0}
