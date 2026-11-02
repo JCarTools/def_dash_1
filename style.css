@@ -365,3 +365,19 @@ dialog .settings-shell{display:flex;flex-direction:column;max-height:88vh}dialog
 html.big-map,html.big-map body,html.big-map .dashboard{background:transparent!important}
 .big-map .center-column>.map-topline,.big-map .center-column>.navigation{visibility:hidden;pointer-events:none}
 .big-map .map-anchor>.map-card{visibility:hidden;pointer-events:none}
+
+/* Full-map overlay keeps the dials close to the outer screen edges. */
+@media(min-width:801px){
+ html.big-map .dashboard{padding-left:10px;padding-right:10px}
+ .big-map .speed-well{justify-items:start}
+ .big-map .rpm-well{justify-items:end}
+ .big-map .gauge{width:100%;justify-self:auto}
+ .big-map .speed-well .gauge svg{object-position:left center}
+ .big-map .rpm-well .gauge svg{object-position:right center}
+}
+
+@media(min-width:801px){
+ .big-map .gauge{width:min(100%,calc(100vh - 150px))}
+ .big-map .speed-well .gauge{justify-self:start}
+ .big-map .rpm-well .gauge{justify-self:end}
+}
