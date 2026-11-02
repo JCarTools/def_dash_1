@@ -360,3 +360,8 @@ dialog .settings-shell{display:flex;flex-direction:column;max-height:88vh}dialog
 .navigation>div{flex:1 1 0%;min-width:0;max-width:100%;overflow:hidden}
 .navigation strong,.navigation>div>span{max-width:100%;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
 .nav-symbol,.nav-limit{flex-shrink:0}
+
+/* Transparent overlay for the host application's full-size map. */
+html.big-map,html.big-map body,html.big-map .dashboard{background:transparent!important}
+.big-map .center-column>.map-topline,.big-map .center-column>.navigation{visibility:hidden;pointer-events:none}
+.big-map .map-anchor>.map-card{visibility:hidden;pointer-events:none}

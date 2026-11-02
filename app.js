@@ -59,7 +59,7 @@
     } catch (_) { subscribed = false; }
   }
   function mapFrame(data) {
-    if (!settings.map || document.hidden || !data) return;
+    if (!settings.map || settings.bigMap || document.hidden || !data) return;
     const src = data.image || data.src || data.frame;
     const timestamp = data.timestamp == null ? Date.now() : Number(data.timestamp);
     if (typeof src !== "string" || !/^data:image\/(jpeg|jpg|png|webp);base64,/i.test(src) || src.length > 12*1024*1024 || !Number.isFinite(timestamp) || timestamp <= mapLastTimestamp) return;
@@ -150,7 +150,7 @@
     api = window.androidApi; fixedPreview = false; clearMusic(); for (const key of Object.keys(state)) delete state[key]; shown.speed = shown.rpm = 0; clearMap();
     bridge = new CarBridge({ api, token: TOKEN, fastMs: settings.pollMs, onData: receive, onStatus: value => { status = value; } });
     try { if (typeof api.onJsReady === "function") api.onJsReady(TOKEN); } catch (_) {}
-    if (!document.hidden) { bridge.start(); mapSubscription(settings.map); }
+    if (!document.hidden) { bridge.start(); mapSubscription(settings.map && !settings.bigMap); }
   }
   function applySettings(value) {
     const languageChanged = settings.language !== value.language;
@@ -159,6 +159,7 @@
     document.documentElement.style.setProperty("--accent", accent); document.documentElement.style.setProperty("--accent-rgb", rgb);
     document.documentElement.style.setProperty("--brightness", settings.brightness/100);
     document.body.classList.toggle("light", settings.theme === "light");
+    document.documentElement.classList.toggle("big-map", settings.bigMap);
     $("musicCard").hidden = !settings.music; $("dashboard").classList.toggle("music-hidden", !settings.music);
     $("mapCard").classList.toggle("contain", settings.mapFit === "contain"); $("dashboard").classList.toggle("map-disabled", !settings.map);
     $("mapPlaceholderTitle").textContent = settings.map ? t("Ваш маршрут — в центре") : t("Мини-карта отключена");
@@ -167,8 +168,8 @@
     if (lastMusic) music(lastMusic); else if (languageChanged || !musicReceived) { clearMusic(); }
     buildGauge("speedGauge", settings.speedMax, false); buildGauge("rpmGauge", settings.rpmMax, true);
     if (bridge) bridge.setInterval(settings.pollMs);
-    if (!settings.map) clearMap();
-    if (api) { mapSubscription(settings.map && !document.hidden); try { if (subscribed && typeof api.setMiniMapTheme === "function") api.setMiniMapTheme(TOKEN, settings.theme === "light" ? "day" : "night"); } catch (_) {} }
+    if (!settings.map || settings.bigMap) clearMap();
+    if (api) { mapSubscription(settings.map && !settings.bigMap && !document.hidden); try { if (subscribed && typeof api.setMiniMapTheme === "function") api.setMiniMapTheme(TOKEN, settings.theme === "light" ? "day" : "night"); } catch (_) {} }
   }
   function renderDetails() {
     const fuel = fresh("fuel"), battery = fresh("battery"), temp = fresh("outTemp", 20000), turns = fresh("turnSignals", 2000), beam = fresh("highBeam",3000), tpms = fresh("tpms");
@@ -230,7 +231,7 @@
   }
   window.addEventListener("dashboard-settings",e => applySettings(e.detail));
   window.addEventListener("storage",() => applySettings(DashSettings.load()));
-  document.addEventListener("visibilitychange",() => { if (document.hidden) { if(bridge) bridge.stop(); mapSubscription(false); } else { attachAndroid(); if(bridge) bridge.start(); mapSubscription(settings.map); } });
+  document.addEventListener("visibilitychange",() => { if (document.hidden) { if(bridge) bridge.stop(); mapSubscription(false); } else { attachAndroid(); if(bridge) bridge.start(); mapSubscription(settings.map && !settings.bigMap); } });
   window.addEventListener("pagehide",() => { if(bridge) bridge.stop(); mapSubscription(false); });
   applySettings(settings); attachAndroid(); renderDetails(); requestAnimationFrame(frame);
   setInterval(attachAndroid,1000);
